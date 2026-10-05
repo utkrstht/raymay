@@ -16,11 +16,14 @@
 
     // where the player is and where they're facing
     const player = { x: 0, z: 0, yaw: 0 };
-    const keys = {};
+    const keys = new Set();
+    const held = (...codes) => codes.some(c => keys.has(c)) ? 1 : 0;
     let last = 0;
 
-    onkeydown = e => { keys[e.key.toLowerCase()] = true };
-    onkeyup = e => { keys[e.key.toLowerCase()] = true};
+    onkeydown = e => { keys.add(e.code); e.preventDefault(); };
+    onkeyup = e => keys.delete(e.code);
+    // clear if you click away or we will not receive the keyup
+    onblur = () => keys.clear();
 
     function render(time) {
       canvas.width = W;
@@ -34,11 +37,11 @@
       last = time;
 
       // turn omg
-      player.yaw += ((keys.arrowright ? 1 : 0) - (keys.arrowleft ? 1 : 0)) * dt * 2;
+      player.yaw += (held("ArrowRight") - held("ArrowLeft")) * dt * 2;
 
       // walk. (that's a period yes that's how you know we're serious)
-      const fwd = (keys.w ? 1 : 0) - (keys.s ? 1 : 0);
-      const str = (keys.d ? 1 : 0) - (keys.a ? 1 : 0);
+      const fwd = held("KeyW") - held("KeyS");
+      const str = held("KeyD") - held("KeyA");
       player.x += (Math.sin(player.yaw) * fwd + Math.cos(player.yaw) * str) * 4 * dt;
       player.z += (Math.cos(player.yaw) * fwd - Math.sin(player.yaw) * str) * 4 * dt;
 

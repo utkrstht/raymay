@@ -50,6 +50,7 @@
       if (held("Space") && jump === 0) {
         jump = 5;
       }
+      jump -= 14 * dt;
       if (jump < 0) {
         jump = 0;
       }

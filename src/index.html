@@ -16,6 +16,8 @@
 
     // where the player is and where they're facing
     const player = { x: 0, z: 0, yaw: 0 };
+    // how high is the camera off the ground
+    let jump = 0;
     const keys = new Set();
     const held = (...codes) => codes.some(c => keys.has(c)) ? 1 : 0;
     let last = 0;
@@ -45,7 +47,14 @@
       player.x += (Math.sin(player.yaw) * fwd + Math.cos(player.yaw) * str) * 4 * dt;
       player.z += (Math.cos(player.yaw) * fwd - Math.sin(player.yaw) * str) * 4 * dt;
 
-      const eye = 0.6; 
+      if (held("Space") && jump === 0) {
+        jump = 5;
+      }
+      if (jump < 0) {
+        jump = 0;
+      }
+
+      const eye = 0.6 + jump; 
 
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {

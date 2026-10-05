@@ -70,7 +70,7 @@
 
           let r, g, b;
           if (hit) {
-            const hx = dx * dist, hy = eye + dy * dist, hz = player.z + dz * dist;
+            const hx = player.x + dx * dist, hy = eye + dy * dist, hz = player.z + dz * dist;
             const e = 0.012;
             let nx = scene(hx + e, hy, hz) - scene(hx, hy, hz);
             let ny = scene(hx, hy + e, hz) - scene(hx, hy, hz);

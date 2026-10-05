@@ -16,8 +16,8 @@
 
     // where the player is and where they're facing
     const player = { x: 0, z: 0, yaw: 0 };
-    // how high is the camera off the ground
-    let jump = 0;
+    // rise is upward speed, height is how far up we actually are
+    let rise = 0, height = 0;
     const keys = new Set();
     const held = (...codes) => codes.some(c => keys.has(c)) ? 1 : 0;
     let last = 0;
@@ -47,15 +47,18 @@
       player.x += (Math.sin(player.yaw) * fwd + Math.cos(player.yaw) * str) * 4 * dt;
       player.z += (Math.cos(player.yaw) * fwd - Math.sin(player.yaw) * str) * 4 * dt;
 
-      if (held("Space") && jump === 0) {
-        jump = 5;
-      }
-      jump -= 14 * dt;
-      if (jump < 0) {
-        jump = 0;
+      // jump up
+      if (held("Space") && rise <= 0) rise = 6;
+      if (rise > 0) {
+        height += rise * dt;   // climb
+        rise -= 14 * dt;       // slow and fall
+        if (rise < 0) rise = 0;
+      } else {
+        height -= 14 * dt;     // fall
+        if (height < 0) { height = 0; rise = 0; }
       }
 
-      const eye = 0.6 + jump; 
+      const eye = 0.6 + height; 
 
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {

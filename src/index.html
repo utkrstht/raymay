@@ -49,19 +49,18 @@
 
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
+          const cy = Math.cos(player.yaw), sy = Math.sin(player.yaw);
           // normalized ray direction
           let dx = (x - W / 2) / 70;
           let dy = (H / 2 - y) / 70;
           let dz = 1.2;
-          const len = Math.hypot(dx, dy, dz);
-          dx /= len; dy /= len; dz /= len;
-        
           // rotation around y
-          const cy = Math.cos(player.yaw), sy = Math.sin(player.yaw);
           const rx = dx * cy + dz * sy;
           dz = dz * cy - dx + sy;
           dx = rx;
-
+          const len = Math.hypot(dx, dy, dz);
+          dx /= len; dy /= len; dz /= len;
+        
           // march the ray forward until it hits something
           let dist = 0, hit = false;
           for (let step = 0; step < 48; step++) {

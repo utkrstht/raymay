@@ -14,6 +14,14 @@
 
     const W = 384, H = 240;
 
+    // where the player is and where they're facing
+    const player = { x: 0, z: 0, yaw: 0 };
+    const keys = {};
+    let last = 0;
+
+    onkeydown = e => { keys[e.key.toLowerCase()] = true };
+    onkeyup = e => { keys[e.key.toLowerCase()] = true};
+
     function render(time) {
       canvas.width = W;
       canvas.height = H;
@@ -21,9 +29,20 @@
 
       const img = ctx.createImageData(W, H);
       const px = img.data;
+    
+      const dt = Math.min((time - last) / 1000, 0.1);
+      last = time;
 
-      const travel = 0;
-      const eye = 0.6;
+      // turn omg
+      player.yaw += ((keys.arrowright ? 1 : 0) - (keys.arrowleft ? 1 : 0)) * dt * 2;
+
+      // walk. (that's a period yes that's how you know we're serious)
+      const fwd = (keys.w ? 1 : 0) - (keys.s ? 1 : 0);
+      const str = (keys.d ? 1 : 0) - (keys.a ? 1 : 0);
+      player.x += (Math.sin(player.yaw) * fwd + Math.cos(player.yaw) * str) * 4 * dt;
+      player.z += (Math.cos(player.yaw) * fwd - Math.sin(player.yaw) * str) * 4 * dt;
+
+      const eye = 0.6; 
 
       for (let y = 0; y < H; y++) {
         for (let x = 0; x < W; x++) {
@@ -33,11 +52,17 @@
           let dz = 1.2;
           const len = Math.hypot(dx, dy, dz);
           dx /= len; dy /= len; dz /= len;
+        
+          // rotation around y
+          const cy = Math.cos(player.yaw), sy = Math.sin(player.yaw);
+          const rx = dx * cy + dz * sy;
+          dz = dz * cy - dx + sy;
+          dx = rx;
 
           // march the ray forward until it hits something
           let dist = 0, hit = false;
           for (let step = 0; step < 48; step++) {
-            const d = scene(dx * dist, eye + dy * dist, -travel + dz * dist);
+            const d = scene(dx * dist, eye + dy * dist, player.z + dz * dist);
             if (d < 0.004) { hit = true; break; }
             dist += d;
             if (dist > 26) break;
@@ -45,7 +70,7 @@
 
           let r, g, b;
           if (hit) {
-            const hx = dx * dist, hy = eye + dy * dist, hz = -travel + dz * dist;
+            const hx = dx * dist, hy = eye + dy * dist, hz = player.z + dz * dist;
             const e = 0.012;
             let nx = scene(hx + e, hy, hz) - scene(hx, hy, hz);
             let ny = scene(hx, hy + e, hz) - scene(hx, hy, hz);

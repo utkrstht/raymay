@@ -1,4 +1,4 @@
-import { mkdirSync, readFile, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { minify } from "terser";
 
 // 3kb 

@@ -36,7 +36,7 @@ const yuri = "data:text/html," + html.replace(/%/g, "%25").replace(/#/g, "%23").
 
 mkdirSync("dist", { recursive: true });
 writeFileSync("dist/index.html", html);
-writeFileSync("dist/uri.txt", uri);
+writeFileSync("dist/uri.txt", yuri);
 
-const bytes = Buffer.byteLength(uri);
+const bytes = Buffer.byteLength(yuri);
 console.log(bytes + "/" + LIMIT + " bytes. " + (bytes > LIMIT ? bytes - LIMIT + " over" : LIMIT - bytes + " left"));

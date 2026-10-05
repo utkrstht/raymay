@@ -1,8 +1,93 @@
 <body>
-    <style>
-        p {
-            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif
+  <canvas id="c"></canvas>
+  <style>
+    body { margin: 0; overflow: hidden; background: black; }
+    canvas { width: 100vw; height: 100vh; display: block; }
+  </style>
+  <script>
+    function scene(x, y, z) {
+      return y + 1;
+    }
+
+    let ctx;
+    const canvas = document.getElementById("c");
+
+    const W = 384, H = 240;
+
+    function render(time) {
+      canvas.width = W;
+      canvas.height = H;
+      ctx = ctx || canvas.getContext("2d");
+
+      const img = ctx.createImageData(W, H);
+      const px = img.data;
+
+      const travel = 0;
+      const eye = 0.6;
+
+      for (let y = 0; y < H; y++) {
+        for (let x = 0; x < W; x++) {
+          // normalized ray direction
+          let dx = (x - W / 2) / 70;
+          let dy = (H / 2 - y) / 70;
+          let dz = 1.2;
+          const len = Math.hypot(dx, dy, dz);
+          dx /= len; dy /= len; dz /= len;
+
+          // march the ray forward until it hits something
+          let dist = 0, hit = false;
+          for (let step = 0; step < 48; step++) {
+            const d = scene(dx * dist, eye + dy * dist, -travel + dz * dist);
+            if (d < 0.004) { hit = true; break; }
+            dist += d;
+            if (dist > 26) break;
+          }
+
+          let r, g, b;
+          if (hit) {
+            const hx = dx * dist, hy = eye + dy * dist, hz = -travel + dz * dist;
+            const e = 0.012;
+            let nx = scene(hx + e, hy, hz) - scene(hx, hy, hz);
+            let ny = scene(hx, hy + e, hz) - scene(hx, hy, hz);
+            let nz = scene(hx, hy, hz + e) - scene(hx, hy, hz);
+            const nl = Math.hypot(nx, ny, nz) || 1;
+            nx /= nl; ny /= nl; nz /= nl;
+
+            let light = Math.max(0, -0.55 * nx + 0.75 * ny + 0.36 * nz);
+
+            const check = ((hx * 0.5) | 0) + ((hz * 0.5) | 0);
+            light *= check & 1 ? 0.35 : 1;
+            r = 90; g = 110; b = 150;
+
+            let sx = -0.55 - dx, sy = 0.75 - dy, sz = 0.36 - dz;
+            const sl = Math.hypot(sx, sy, sz);
+            const spec = Math.pow(Math.max(0, (nx * sx + ny * sy + nz * sz) / sl), 20) * 240;
+            r += spec; g += spec; b += spec;
+
+            const shade = light * 0.9 + 0.25;
+            r *= shade; g *= shade; b *= shade;
+          } else {
+            r = 25 + dy * 70; g = 40 + dy * 95; b = 95 + dy * 130;
+            dist = 40;
+          }
+
+          const fog = Math.min(1, dist * 0.045);
+          r += fog * (25 + dy * 70);
+          g += fog * (40 + dy * 95);
+          b += fog * (95 + dy * 130);
+
+          const o = (y * W + x) * 4;
+          px[o] = r > 255 ? 255 : r;
+          px[o + 1] = g > 255 ? 255 : g;
+          px[o + 2] = b > 255 ? 255 : b;
+          px[o + 3] = 255;
         }
-    </style>
-    <p>hello</p>
+      }
+
+      ctx.putImageData(img, 0, 0);
+      requestAnimationFrame(render);
+    }
+
+    requestAnimationFrame(render);
+  </script>
 </body>

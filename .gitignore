@@ -1,0 +1,5 @@
+# random tests
+test/
+
+# build
+dist/
